@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# runtime artifacts
+data/*.db
+models/*.pt
+uploads/
+
+# editor/OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>Insekten-Tracker Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <header>
+    <h1>Insekten-Tracker</h1>
+    <p>Live-Übersicht erkannter und getrackter Insekten</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Arten-Verteilung</h2>
+      <canvas id="speciesChart" height="120"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Video hochladen</h2>
+      <form id="uploadForm">
+        <input type="file" name="file" id="fileInput" accept="video/*" required />
+        <button type="submit">Verarbeiten</button>
+      </form>
+      <p id="uploadStatus"></p>
+    </section>
+
+    <section class="card">
+      <h2>Letzte Sichtungen</h2>
+      <table id="sightingsTable">
+        <thead>
+          <tr><th>Zeit</th><th>Art</th><th>Track-ID</th><th>Konfidenz</th><th>Quelle</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

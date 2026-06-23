@@ -1,0 +1,38 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  background: #f4f6f5;
+  color: #1f2a24;
+}
+
+header {
+  background: #2f6b3a;
+  color: white;
+  padding: 1.25rem 2rem;
+}
+
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #e2e8e4;
+}
