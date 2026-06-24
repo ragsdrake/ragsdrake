@@ -34,6 +34,46 @@ oder Insekten-Datensätze auf [Roboflow](https://roboflow.com/) /
 [iNaturalist](https://www.inaturalist.org/)) und über `detector.weights` in
 `configs/default.yaml` eingebunden werden.
 
+## Eigenes Modell auf IP102 trainieren
+
+IP102 ist nur ein Bild-Datensatz, kein fertiges Modell. Um ihn zu nutzen,
+musst du selbst ein YOLO-Modell darauf trainieren; danach lässt sich das
+Ergebnis (`best.pt`) wie jedes andere YOLO-Modell einbinden.
+
+1. **Datensatz herunterladen** (manuell, kein automatischer Download
+   möglich): offizielle Quelle [github.com/xpwu95/IP102](https://github.com/xpwu95/IP102),
+   verteilt über Google Drive/Baidu Pan. Du brauchst die **Detection**-Variante
+   (PASCAL-VOC-Format mit Bounding-Boxen), nicht nur die Klassifikations-Variante.
+
+2. **In YOLO-Format konvertieren**:
+
+   ```bash
+   python scripts/prepare_ip102.py \
+     --input-dir /pfad/zu/IP102/Detection/VOC2007 \
+     --output-dir data/ip102_yolo
+   ```
+
+   Das Skript erwartet die Standard-VOC-Struktur (`Annotations/`, `JPEGImages/`,
+   `ImageSets/Main/{train,val,test}.txt`, `classes.txt`). Falls deine Kopie
+   des Datensatzes anders benannt ist, Ordner entsprechend anpassen.
+
+3. **Trainieren**:
+
+   ```bash
+   scripts/train_ip102.sh data/ip102_yolo/ip102.yaml 100 640
+   ```
+
+   Läuft über die Ultralytics-CLI (`yolo train ...`), Dauer abhängig von
+   Hardware (Stunden bis Tage auf CPU, deutlich schneller mit GPU). Ergebnis
+   liegt danach unter `runs/ip102/train/weights/best.pt`.
+
+4. **Einbinden**: Pfad zur trainierten `best.pt` in `configs/default.yaml`
+   unter `detector.weights` eintragen. Ab dann nutzt die Pipeline (Webcam,
+   Pi-Kamera, Video-Upload) automatisch das trainierte Modell.
+
+Das trainierte Modell erkennt nur die ~102 IP102-Schädlingsarten zuverlässig;
+Arten außerhalb dieses Datensatzes werden nicht oder falsch erkannt.
+
 ## Setup
 
 ```bash
@@ -83,7 +123,7 @@ pytest
 
 ## Roadmap
 
-- [ ] Eigenes Insekten-Erkennungsmodell trainieren/integrieren
+- [ ] Eigenes Insekten-Erkennungsmodell auf IP102 trainieren (Skripte vorhanden, Training noch ausstehend)
 - [ ] Hintergrund-Queue für Video-Uploads (statt synchroner Verarbeitung)
 - [ ] Robusterer Tracker (ByteTrack/DeepSORT) als Alternative zum IOU-Tracker
 - [ ] Live-Video-Stream im Dashboard (nicht nur Statistiken)
