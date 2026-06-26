@@ -45,19 +45,31 @@ Ergebnis (`best.pt`) wie jedes andere YOLO-Modell einbinden.
    verteilt über Google Drive/Baidu Pan. Du brauchst die **Detection**-Variante
    (PASCAL-VOC-Format mit Bounding-Boxen), nicht nur die Klassifikations-Variante.
 
-2. **In YOLO-Format konvertieren**:
+2. **Archive entpacken** (die Drive-Kopie liefert `Annotations.tar`/`JPEGImages.tar`
+   statt fertiger Ordner):
 
    ```bash
-   python scripts/prepare_ip102.py \
+   cd IP102/Detection/VOC2007
+   tar -xf Annotations.tar
+   tar -xf JPEGImages.tar
+   ```
+
+3. **In YOLO-Format konvertieren**:
+
+   ```bash
+   python3 scripts/prepare_ip102.py \
      --input-dir /pfad/zu/IP102/Detection/VOC2007 \
      --output-dir data/ip102_yolo
    ```
 
-   Das Skript erwartet die Standard-VOC-Struktur (`Annotations/`, `JPEGImages/`,
-   `ImageSets/Main/{train,val,test}.txt`, `classes.txt`). Falls deine Kopie
-   des Datensatzes anders benannt ist, Ordner entsprechend anpassen.
+   Das Skript erwartet `Annotations/`, `JPEGImages/` und
+   `ImageSets/Main/{trainval,test}.txt` (Standard-VOC2007-Schema von IP102;
+   `trainval` wird als YOLO-`train`-Split verwendet, `test` als `val`-Split).
+   Eine `classes.txt` ist nicht nötig – die Klassennamen werden automatisch
+   aus den Annotationen ermittelt. Braucht keine zusätzlichen Pakete (nur
+   Python-Standardbibliothek).
 
-3. **Trainieren**:
+4. **Trainieren**:
 
    ```bash
    scripts/train_ip102.sh data/ip102_yolo/ip102.yaml 100 640
@@ -67,7 +79,7 @@ Ergebnis (`best.pt`) wie jedes andere YOLO-Modell einbinden.
    Hardware (Stunden bis Tage auf CPU, deutlich schneller mit GPU). Ergebnis
    liegt danach unter `runs/ip102/train/weights/best.pt`.
 
-4. **Einbinden**: Pfad zur trainierten `best.pt` in `configs/default.yaml`
+5. **Einbinden**: Pfad zur trainierten `best.pt` in `configs/default.yaml`
    unter `detector.weights` eintragen. Ab dann nutzt die Pipeline (Webcam,
    Pi-Kamera, Video-Upload) automatisch das trainierte Modell.
 
