@@ -38,23 +38,42 @@ def load_split_ids(split_file: Path) -> list[str]:
     return [line.strip() for line in split_file.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def parse_annotation(xml_path: Path) -> tuple[float, float, list[tuple[str, float, float, float, float]]]:
-    """Liest eine VOC-XML-Annotation. Gibt (Breite, Höhe, [(Name, xmin, ymin, xmax, ymax), ...]) zurück."""
-    root = ET.parse(xml_path).getroot()
-    size = root.find("size")
-    img_w = float(size.find("width").text)
-    img_h = float(size.find("height").text)
+class AnnotationError(Exception):
+    pass
 
-    objects = []
-    for obj in root.findall("object"):
-        name = obj.find("name").text.strip()
-        box = obj.find("bndbox")
-        xmin = float(box.find("xmin").text)
-        ymin = float(box.find("ymin").text)
-        xmax = float(box.find("xmax").text)
-        ymax = float(box.find("ymax").text)
-        objects.append((name, xmin, ymin, xmax, ymax))
-    return img_w, img_h, objects
+
+def parse_annotation(xml_path: Path) -> tuple[float, float, list[tuple[str, float, float, float, float]]]:
+    """Liest eine VOC-XML-Annotation. Gibt (Breite, Höhe, [(Name, xmin, ymin, xmax, ymax), ...]) zurück.
+
+    Manche IP102-Annotationsdateien enthalten nach dem schließenden
+    </annotation>-Tag noch zusätzlichen (oft doppelten) Inhalt, der die
+    Datei als XML ungültig macht ("junk after document element"). Wir
+    schneiden deshalb alles nach dem ersten </annotation> ab, bevor wir
+    parsen, statt die Datei komplett zu verwerfen.
+    """
+    text = xml_path.read_text(encoding="utf-8", errors="ignore")
+    end_idx = text.find("</annotation>")
+    if end_idx != -1:
+        text = text[: end_idx + len("</annotation>")]
+
+    try:
+        root = ET.fromstring(text)
+        size = root.find("size")
+        img_w = float(size.find("width").text)
+        img_h = float(size.find("height").text)
+
+        objects = []
+        for obj in root.findall("object"):
+            name = obj.find("name").text.strip()
+            box = obj.find("bndbox")
+            xmin = float(box.find("xmin").text)
+            ymin = float(box.find("ymin").text)
+            xmax = float(box.find("xmax").text)
+            ymax = float(box.find("ymax").text)
+            objects.append((name, xmin, ymin, xmax, ymax))
+        return img_w, img_h, objects
+    except (ET.ParseError, AttributeError, TypeError, ValueError) as exc:
+        raise AnnotationError(f"{xml_path.name}: {exc}") from exc
 
 
 def discover_class_names(input_dir: Path, image_ids: list[str]) -> list[str]:
@@ -67,7 +86,11 @@ def discover_class_names(input_dir: Path, image_ids: list[str]) -> list[str]:
         xml_path = input_dir / "Annotations" / f"{image_id}.xml"
         if not xml_path.exists():
             continue
-        _, _, objects = parse_annotation(xml_path)
+        try:
+            _, _, objects = parse_annotation(xml_path)
+        except AnnotationError as exc:
+            print(f"Warnung: defekte Annotation übersprungen ({exc})")
+            continue
         names.update(name for name, *_ in objects)
     return sorted(names)
 
@@ -106,12 +129,18 @@ def convert_split(
             skipped += 1
             continue
 
-        img_w, img_h, objects = parse_annotation(xml_path)
+        try:
+            img_w, img_h, objects = parse_annotation(xml_path)
+        except AnnotationError as exc:
+            print(f"Warnung: defekte Annotation übersprungen ({exc})")
+            skipped += 1
+            continue
+
         lines = to_yolo_lines(img_w, img_h, objects, class_to_id)
         (labels_out / f"{image_id}.txt").write_text("\n".join(lines), encoding="utf-8")
         shutil.copy(image_path, images_out / f"{image_id}.jpg")
 
-    print(f"[{split_name}] {len(image_ids) - skipped} Bilder konvertiert, {skipped} übersprungen (fehlende Dateien)")
+    print(f"[{split_name}] {len(image_ids) - skipped} Bilder konvertiert, {skipped} übersprungen (fehlend/defekt)")
 
 
 def main() -> None:
