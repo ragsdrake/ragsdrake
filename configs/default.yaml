@@ -7,10 +7,11 @@ source:
   video_path: null     # genutzt von video_file
 
 detector:
-  weights: yolov8n.pt   # Platzhalter-Modell (COCO). Für echte Artenerkennung durch
-                          # ein auf Insekten trainiertes YOLO-Modell ersetzen.
+  weights: models/insect_yolo.pt   # Eigenes IP102-YOLO-Modell (102 Schädlingsklassen).
+                                     # Datei liegt nicht im Repo (siehe .gitignore) -
+                                     # lokal nach dem Training dort ablegen.
   confidence: 0.35
-  device: cpu            # cpu | cuda | mps
+  device: cuda            # cpu | cuda | mps
 
 tracker:
   iou_threshold: 0.3
