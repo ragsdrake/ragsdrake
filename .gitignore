@@ -11,6 +11,10 @@ data/*.db
 models/*.pt
 uploads/
 
+# lokale Testbilder (nicht committen, nur lokal zum Ausprobieren)
+test_images/*
+!test_images/.gitkeep
+
 # editor/OS
 .vscode/
 .idea/
