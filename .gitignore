@@ -11,6 +11,12 @@ data/*.db
 models/*.pt
 uploads/
 
+# lokale Trainings-Datensätze (Bilder/Labels nicht committen, nur Platzhalter)
+data/ip102_yolo/*
+!data/ip102_yolo/.gitkeep
+data/lepidoptera_yolo/*
+!data/lepidoptera_yolo/.gitkeep
+
 # lokale Testbilder (nicht committen, nur lokal zum Ausprobieren)
 test_images/*
 !test_images/.gitkeep
