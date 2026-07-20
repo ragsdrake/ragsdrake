@@ -47,7 +47,37 @@ def collect_images(species_dir: Path) -> list[Path]:
     return sorted(p for p in species_dir.iterdir() if p.suffix.lower() in IMAGE_EXTENSIONS)
 
 
-def convert(input_dir: Path, output_dir: Path, val_ratio: float, seed: int) -> None:
+def add_background_images(bg_dir: Path, output_dir: Path, val_ratio: float, rng: random.Random) -> int:
+    """Kopiert Nicht-Schmetterling-Bilder mit leerer Labeldatei in den Datensatz.
+
+    YOLO erkennt leere .txt-Dateien als Hintergrundbilder (kein Objekt vorhanden)
+    und lernt dadurch, bei fremden Motiven keine Erkennung auszugeben.
+    """
+    images = sorted(p for p in bg_dir.rglob("*") if p.suffix.lower() in IMAGE_EXTENSIONS)
+    if not images:
+        print(f"Warnung: keine Bilder in --background-dir {bg_dir} gefunden")
+        return 0
+
+    rng.shuffle(images)
+    n_val = max(1, round(len(images) * val_ratio)) if len(images) >= MIN_IMAGES_FOR_VAL_SPLIT else 0
+    splits = {"val": images[:n_val], "train": images[n_val:]}
+
+    for split_name, split_images in splits.items():
+        images_out = output_dir / "images" / split_name
+        labels_out = output_dir / "labels" / split_name
+        images_out.mkdir(parents=True, exist_ok=True)
+        labels_out.mkdir(parents=True, exist_ok=True)
+        for image_path in split_images:
+            stem = f"bg_{image_path.stem}"
+            shutil.copy(image_path, images_out / f"{stem}{image_path.suffix.lower()}")
+            (labels_out / f"{stem}.txt").write_text("", encoding="utf-8")  # leer = kein Objekt
+
+    total = len(images)
+    print(f"  Hintergrundbilder: {total - n_val} train, {n_val} val (leere Labels)")
+    return total
+
+
+def convert(input_dir: Path, output_dir: Path, val_ratio: float, seed: int, background_dir: Path | None = None) -> None:
     species_names = discover_species(input_dir)
     if not species_names:
         raise SystemExit(f"Keine Art-Unterordner in {input_dir} gefunden")
@@ -80,6 +110,9 @@ def convert(input_dir: Path, output_dir: Path, val_ratio: float, seed: int) -> N
 
         print(f"  {species}: {len(splits['train'])} train, {len(splits['val'])} val")
 
+    if background_dir is not None:
+        add_background_images(background_dir, output_dir, val_ratio, rng)
+
     print(f"\n{len(species_names)} Arten, {counts['train']} Trainings- / {counts['val']} Val-Bilder konvertiert")
 
     yaml_path = output_dir / "lepidoptera.yaml"
@@ -100,9 +133,15 @@ def main() -> None:
     parser.add_argument("--output-dir", default=Path("data/lepidoptera_yolo"), type=Path)
     parser.add_argument("--val-ratio", default=0.1, type=float, help="Anteil je Art, der als Val-Split genutzt wird")
     parser.add_argument("--seed", default=42, type=int)
+    parser.add_argument(
+        "--background-dir", default=None, type=Path,
+        help="Ordner mit beliebigen Nicht-Schmetterling-Bildern (Fußball, Himmel, ...). "
+             "Diese werden mit leerer Labeldatei eingefügt, damit das Modell bei fremden "
+             "Motiven keine Erkennung ausgibt.",
+    )
     args = parser.parse_args()
 
-    convert(args.input_dir, args.output_dir, args.val_ratio, args.seed)
+    convert(args.input_dir, args.output_dir, args.val_ratio, args.seed, args.background_dir)
 
 
 if __name__ == "__main__":
