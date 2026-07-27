@@ -16,6 +16,14 @@ data/ip102_yolo/*
 !data/ip102_yolo/.gitkeep
 data/lepidoptera_yolo/*
 !data/lepidoptera_yolo/.gitkeep
+data/bienen_yolo/*
+!data/bienen_yolo/.gitkeep
+data/bienen_raw/*
+!data/bienen_raw/.gitkeep
+
+# Hintergrundbilder (COCO o.ä., lokal)
+data/backgrounds/*
+!data/backgrounds/.gitkeep
 
 # lokale Testbilder (nicht committen, nur lokal zum Ausprobieren)
 test_images/*
