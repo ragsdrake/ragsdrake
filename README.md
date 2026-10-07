@@ -11,7 +11,7 @@ Natur zusammenkommen. Hier lege ich meine Python-Projekte ab; das aktuelle ist d
 # Insekten-Tracker
 
 Kamerabasierte Erkennung und Tracking verschiedener Insektenarten.
-**Stand:** Die Pipeline (Kamera → Erkennung → Tracking → SQLite → Dashboard) läuft und ist getestet.
+**Stand:** Die Pipeline (Kamera → Erkennung → Tracking → SQLite → Dashboard) ist umgesetzt, Tracking und Speicherung sind per Tests abgedeckt.
 Ein eigenes, auf Insekten trainiertes Erkennungsmodell gibt es noch nicht, die Trainingsskripte
 (IP102, Schmetterlinge) sind vorbereitet. Dazu unten mehr.
 
