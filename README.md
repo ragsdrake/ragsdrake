@@ -1,6 +1,22 @@
+# Hi, ich bin Tim 👋
+
+Lehramtsstudent (Biologie & Technik, PH Karlsruhe, Bachelor voraussichtlich Februar 2027),
+nebenbei CAD Designer (Fusion 360 / Onshape) und Werkstudent. Mich interessiert, wo Technik, Daten und
+Natur zusammenkommen. Hier lege ich meine Python-Projekte ab; das aktuelle ist der **Insekten-Tracker**.
+
+**Kontakt:** staenglee.tim@gmail.com
+
+---
+
 # Insekten-Tracker
 
 Kamerabasierte Erkennung und Tracking verschiedener Insektenarten.
+**Stand:** Die Pipeline (Kamera → Erkennung → Tracking → SQLite → Dashboard) läuft und ist getestet.
+Ein eigenes, auf Insekten trainiertes Erkennungsmodell gibt es noch nicht, die Trainingsskripte
+(IP102, Schmetterlinge) sind vorbereitet. Dazu unten mehr.
+
+**Technik:** Python, Ultralytics YOLO, FastAPI, SQLite, pytest, Raspberry Pi (Picamera2).
+
 Modular aufgebaut, damit dieselbe Pipeline auf drei Zielplattformen läuft:
 
 - **Raspberry Pi / Embedded** (Pi-Kameramodul, dauerhafter Betrieb im Feld)
